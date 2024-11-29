@@ -1,28 +1,30 @@
 # Contribute
 
-If you want to contribute to this repository: This is a simple Vue.js application. Simply clone this repository, edit your desired files and file a pull request.
+If you want to contribute to this repository: This is a Svelte application. Simply clone this repository, edit your desired files and file a pull request.
 
 ## Install and setup project
-```
+```bash
 git clone git@github.com:dialogik-tv/grasp.git
 cd grasp
 npm install
 ```
 
-### Compiles and hot-reloads for development
-```
-npm run serve
+### Development server
+```bash
+npm run dev
 ```
 
-### Compiles and minifies for production
-```
+### Production build
+```bash
 npm run build
 ```
 
-### Lints and fixes files
-```
-npm run lint
+### Type checking
+```bash
+npm run check
 ```
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+### Preview production build
+```bash
+npm run preview
+```
