@@ -53,82 +53,51 @@
   role="button"
   tabindex="0"
 >
-  {#if roles.length > 0}
-    <div class="role-indicators" aria-hidden="true">
+  <div class="role-indicators" aria-hidden="true">
+    {#if roles.length > 0}
       {#each roles as role}
         <div 
           class={`role-indicator ${role.type}`} 
           style="height: {roleHeight}; background-color: {role.color};"
         />
       {/each}
-    </div>
-  {/if}
-  <div class="meta">
-    <div class="username">{message.username}</div>
-    <div class="timestamp">{moment(message.timestamp).fromNow()}</div>
+    {/if}
   </div>
-  <div class="body break-words whitespace-pre-wrap">
-    {@html formatEmotes(message.message, message.emotes)}
+
+  <div class="message-content">
+    <div class="message-header">
+      <div class="username-container">
+        <span class="username">{message.username}</span>
+        <span class="timestamp">{moment(message.timestamp).fromNow()}</span>
+      </div>
+    </div>
+    
+    <div class="message-body">
+      {@html formatEmotes(message.message, message.emotes)}
+    </div>
   </div>
 </div>
 
 <style>
   .message {
-    margin-bottom: 0.75rem;
-    background-color: #1b1b1b;
-    padding: 0.75rem 1rem 0.75rem 1.5rem;
-    cursor: pointer;
     position: relative;
+    background: #1a1a1a;
+    margin: 0.5rem 0;
     border-radius: 0.25rem;
     transition: all 0.2s ease;
+    display: flex;
   }
 
   .message:hover {
-    background-color: #252525;
-  }
-
-  .message:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(62, 184, 255, 0.3);
-  }
-
-  .meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.5rem;
-  }
-
-  .username {
-    font-size: 0.875rem;
-    color: #999;
-    font-weight: 500;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
-  }
-
-  .timestamp {
-    font-size: 0.75rem;
-    color: #666;
-    padding-left: 0.5rem;
-  }
-
-  .body {
-    line-height: 1.4;
-    font-size: 1rem;
-    color: #e1e1e1;
+    background: #222;
   }
 
   .message.read {
-    opacity: 0.4;
+    opacity: 0.5;
   }
 
-  /* Role indicators - vertical bars only */
   .role-indicators {
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
+    flex: none;
     width: 0.25rem;
     display: flex;
     flex-direction: column;
@@ -141,26 +110,56 @@
     transition: height 0.2s ease;
   }
 
-  /* First message styling - more prominent but not too large */
-  .column-grasp.first-message .username {
-    font-size: 1.5rem;
-    background-color: purple;
-    color: white;
-    padding: 0.375rem 0.75rem;
-    border-radius: 0.25rem;
-    font-weight: bold;
-    display: inline-block;
+  .message-content {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    min-width: 0;
   }
 
-  .column-grasp.second-message .username {
-    background-color: purple;
+  .message-header {
+    margin-bottom: 0.5rem;
+  }
+
+  .username-container {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+  }
+
+  .username {
+    font-size: 0.875rem;
+    color: #999;
+    font-weight: 500;
+  }
+
+  .timestamp {
+    font-size: 0.75rem;
+    color: #666;
+  }
+
+  .message-body {
+    color: #e1e1e1;
+    line-height: 1.4;
+    word-break: break-word;
+    white-space: pre-wrap;
+  }
+
+  /* Grasp column specific styles */
+  .column-grasp.first-message .username {
+    font-size: 1.25rem;
+    background: #800080;
     color: white;
     padding: 0.25rem 0.5rem;
     border-radius: 0.25rem;
-    font-size: 1rem;
   }
 
-  /* Special indicators - grasp column only */
+  .column-grasp.second-message .username {
+    background: rgba(128, 0, 128, 0.7);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+  }
+
   .column-grasp.mention {
     border-right: 0.25rem solid #00acee;
   }
@@ -170,18 +169,17 @@
   }
 
   .column-grasp.haystack {
-    border-right: 0.25rem solid yellow;
+    border-right: 0.25rem solid #ffd700;
   }
 
-  .column-grasp.shorty .body {
-    font-size: 1.75rem;
+  .column-grasp.shorty .message-body {
+    font-size: 1.5rem;
     font-weight: bold;
     line-height: 1.2;
-    margin-top: 0.375rem;
   }
 
   :global(.emoticon) {
-    max-height: 1.5em;
+    height: 1.5em;
     vertical-align: middle;
     margin: 0 0.125em;
   }

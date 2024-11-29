@@ -27,29 +27,30 @@
 
 <style>
   .message-list {
-    height: 94vh;
+    height: calc(100vh - 8rem);
+    overflow-y: auto;
     overflow-x: hidden;
-    overflow-y: scroll;
-    padding-top: 1rem;
-    padding-right: 1rem;
+    padding: 1rem;
+    scrollbar-width: thin;
+    scrollbar-color: #222 #000;
+    -ms-overflow-style: none;
   }
 
   .message-list::-webkit-scrollbar {
     width: 6px;
-    height: 6px;
+  }
+
+  .message-list::-webkit-scrollbar-track {
+    background: #000;
+    border-radius: 3px;
   }
 
   .message-list::-webkit-scrollbar-thumb {
-    background-color: #222;
+    background: #222;
     border-radius: 3px;
   }
 
   .message-list::-webkit-scrollbar-thumb:hover {
-    background-color: #444;
-  }
-
-  .message-list::-webkit-scrollbar-track {
-    background-color: #000;
-    border-radius: 3px;
+    background: #333;
   }
 </style>
