@@ -1,20 +1,26 @@
-// Message related types
 export interface Message {
   id: string;
   username: string;
   message: string;
   timestamp: Date;
   badges: Badges;
-  emotes: any[];
+  emotes: TwitchEmote[];
   read: boolean;
   pick: boolean;
   grasp: GraspResult;
 }
 
+export interface TwitchEmote {
+  id: string;
+  start: number;
+  end: number;
+}
+
 export interface Badges {
-  moderator?: boolean;
-  subscriber?: boolean;
-  vip?: boolean;
+  moderator?: string;
+  subscriber?: string;
+  vip?: string;
+  [key: string]: string | undefined;
 }
 
 export interface GraspResult {
@@ -28,7 +34,6 @@ export interface GraspResult {
   redemption: boolean;
 }
 
-// User related types
 export interface User {
   userId: string;
   username: string;
@@ -36,7 +41,6 @@ export interface User {
   chatcount: number;
 }
 
-// Filter related types
 export interface FilterSettings {
   username: string;
   mention: boolean;

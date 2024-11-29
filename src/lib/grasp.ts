@@ -3,7 +3,7 @@ export class GraspAnalyzer {
   private langData: string[];
 
   constructor(channel: string, langData: string[]) {
-    this.channel = channel;
+    this.channel = channel.toLowerCase();
     this.langData = langData;
   }
 
@@ -22,13 +22,13 @@ export class GraspAnalyzer {
     // Skip if message is directed to someone else
     if (
       input.message.startsWith('@') &&
-      !input.message.toLowerCase().includes(`@${this.channel.toLowerCase()}`)
+      !input.message.toLowerCase().includes(`@${this.channel}`)
     ) {
       return result;
     }
 
     // Check for broadcaster mention
-    if (input.message.toLowerCase().includes(`@${this.channel.toLowerCase()}`)) {
+    if (input.message.toLowerCase().includes(`@${this.channel}`)) {
       result.mention = true;
     }
 
@@ -48,8 +48,8 @@ export class GraspAnalyzer {
     }
 
     // Check badges
-    result.mod = input.tags.mod === '1' || input.tags.badges?.moderator === '1';
-    result.sub = input.tags.subscriber === '1' || input.tags.badges?.subscriber;
+    result.mod = input.tags.mod === '1' || !!input.tags.badges?.moderator;
+    result.sub = input.tags.subscriber === '1' || !!input.tags.badges?.subscriber;
     result.vip = !!input.tags.badges?.vip;
     result.redemption = !!input.tags.customRewardId;
 
@@ -70,7 +70,8 @@ export class GraspAnalyzer {
 
   private searchShorties(message: string): boolean {
     const sanitized = this.removeDiacritics(message.toLowerCase())
-      .replace(/[^a-z\s]/gi, '');
+      .replace(/[^a-z\s]/gi, '')
+      .trim();
     return this.langData.includes(sanitized);
   }
 

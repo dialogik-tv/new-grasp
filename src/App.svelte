@@ -2,13 +2,11 @@
   import { onMount } from 'svelte';
   import { GraspAnalyzer } from './lib/grasp';
   import MessageList from './components/MessageList.svelte';
-  import GraspList from './components/GraspList.svelte';
-  import PickList from './components/PickList.svelte';
   import SettingsPanel from './components/SettingsPanel.svelte';
   import ChannelInput from './components/ChannelInput.svelte';
-  import { initializeChat } from './lib/chat';
+  import { initializeTwitchChat } from './lib/services/twitchChat';
+  import { initializeKeyboardShortcuts } from './lib/utils/keyboard';
   import { getChannelFromUrl, getUrlParams } from './lib/urlParams';
-  import { initializeKeyboardShortcuts } from './lib/keyboard';
   import { getLanguageData } from './lib/languages';
 
   const channel = getChannelFromUrl();
@@ -19,7 +17,7 @@
       const langData = await getLanguageData(getUrlParams());
       grasp = new GraspAnalyzer(channel, langData);
       
-      await initializeChat(channel, grasp);
+      await initializeTwitchChat(channel, grasp);
       initializeKeyboardShortcuts();
       document.title = `grasping #${channel}`;
     }
@@ -36,9 +34,9 @@
     
     <main class="container mx-auto p-4">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <MessageList />
-        <GraspList />
-        <PickList />
+        <MessageList column="chat" />
+        <MessageList column="grasp" />
+        <MessageList column="picks" />
       </div>
     </main>
   </div>

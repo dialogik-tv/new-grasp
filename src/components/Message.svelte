@@ -2,6 +2,7 @@
   import moment from 'moment';
   import type { Message } from '../lib/types';
   import { formatEmotes } from '../lib/emotes';
+  import { getUserRoles } from '../lib/utils/roles';
 
   export let message: Message;
   export let column: 'chat' | 'grasp' | 'picks' = 'chat';
@@ -39,13 +40,8 @@
     `column-${column}`
   ].filter(Boolean).join(' ');
 
-  // Calculate role indicators
-  $: roleIndicators = [];
-  $: {
-    if (message.grasp.mod) roleIndicators.push('mod');
-    if (message.grasp.sub) roleIndicators.push('sub');
-    if (message.grasp.vip) roleIndicators.push('vip');
-  }
+  $: roles = getUserRoles(message.badges);
+  $: roleHeight = roles.length > 0 ? `${100 / roles.length}%` : '0';
 </script>
 
 <div 
@@ -55,10 +51,13 @@
   role="button"
   tabindex="0"
 >
-  {#if roleIndicators.length > 0}
+  {#if roles.length > 0}
     <div class="role-indicators" aria-hidden="true">
-      {#each roleIndicators as role}
-        <div class={`role-indicator ${role}`} />
+      {#each roles as role}
+        <div 
+          class={`role-indicator ${role.type}`} 
+          style="height: {roleHeight}; background-color: {role.color};"
+        />
       {/each}
     </div>
   {/if}
@@ -131,19 +130,16 @@
   }
 
   .role-indicator {
-    flex: 1;
+    transition: height 0.2s ease;
   }
 
-  .role-indicator.mod {
-    background-color: purple;
+  /* Column specific styling */
+  .column-chat .role-indicators {
+    width: 0.5rem;
   }
 
-  .role-indicator.sub {
-    background-color: white;
-  }
-
-  .role-indicator.vip {
-    background-color: #00ff00;
+  .column-grasp .role-indicators {
+    width: 0.5rem;
   }
 
   /* Grasp column styling */

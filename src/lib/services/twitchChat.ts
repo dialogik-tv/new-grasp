@@ -2,32 +2,49 @@ import TwitchJs from 'twitch-js';
 import type { Message } from '../types';
 import { GraspAnalyzer } from '../grasp';
 import { addMessage } from '../stores/messageStore';
+import { updateUser } from '../stores/userStore';
 import { COMMON_BOTS } from '../config';
 
 export async function initializeTwitchChat(channel: string, grasp: GraspAnalyzer) {
-  const { chat } = new TwitchJs({ channel });
+  const client = new TwitchJs({ channel });
   
-  await chat.connect();
-  await chat.join(channel);
+  try {
+    const { chat } = client;
+    await chat.connect();
+    await chat.join(channel);
 
-  chat.on(TwitchJs.Chat.Events.ALL, (input: any) => {
-    if (input.event !== 'PRIVMSG' || !input.message || !input.username) return;
-    if (COMMON_BOTS.includes(input.username.toLowerCase())) return;
+    chat.on('PRIVMSG', msg => {
+      if (!msg.message || !msg.username) return;
+      if (COMMON_BOTS.includes(msg.username.toLowerCase())) return;
 
-    const message: Message = {
-      id: crypto.randomUUID(),
-      username: input.tags.displayName,
-      message: input.message,
-      timestamp: new Date(input.timestamp),
-      badges: input.tags.badges || {},
-      emotes: input.tags.emotes || [],
-      read: false,
-      pick: false,
-      grasp: grasp.analyze(input, 1) // Initial message count
-    };
+      // Update user info
+      const user = {
+        userId: msg.tags.userId,
+        username: msg.tags.displayName || msg.username,
+        badges: msg.tags.badges || {},
+        chatcount: 1
+      };
+      updateUser(user);
 
-    addMessage(message);
-  });
+      // Create message
+      const message: Message = {
+        id: crypto.randomUUID(),
+        username: user.username,
+        message: msg.message,
+        timestamp: new Date(),
+        badges: msg.tags.badges || {},
+        emotes: msg.tags.emotes || [],
+        read: false,
+        pick: false,
+        grasp: grasp.analyze(msg, user.chatcount)
+      };
 
-  return chat;
+      addMessage(message);
+    });
+
+    return chat;
+  } catch (error) {
+    console.error('Failed to connect to Twitch chat:', error);
+    throw error;
+  }
 }
