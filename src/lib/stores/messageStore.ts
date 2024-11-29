@@ -1,58 +1,73 @@
 import { writable, derived } from 'svelte/store';
 import type { Message } from '../types';
+import { filterMessages } from '../utils/messageFilters';
+import { get } from 'svelte/store';
+import { filterSettings } from './filterStore';
 
-// Create the main message store
-export const messages = writable<Message[]>([]);
+// Create the main message store with a fixed size circular buffer
+const MAX_MESSAGES = 1000;
+const PRUNE_THRESHOLD = 800;
 
-// Create derived stores for filtered messages
-export const chatMessages = derived(messages, $messages => 
-  $messages.slice(0, 100)
-);
+function createMessageStore() {
+  const { subscribe, update } = writable<Message[]>([]);
 
-export const graspMessages = derived(messages, $messages => 
-  $messages.filter(msg => 
-    msg.grasp.mention || 
-    msg.grasp.chatcount !== false || 
-    msg.grasp.mod || 
-    msg.grasp.sub || 
-    msg.grasp.vip || 
-    msg.grasp.haystack || 
-    msg.grasp.shorty || 
-    msg.grasp.redemption
-  )
-);
-
-export const pickedMessages = derived(messages, $messages => 
-  $messages.filter(msg => msg.pick)
-);
-
-// Message actions
-export function addMessage(message: Message) {
-  messages.update(msgs => {
-    // Add new message at the beginning
-    msgs = [message, ...msgs];
-    
-    // Keep only the last 100 messages
-    if (msgs.length > 100) {
-      msgs = msgs.slice(0, 100);
+  return {
+    subscribe,
+    add: (message: Message) => {
+      update(messages => {
+        const newMessages = [message, ...messages];
+        
+        // Prune messages when we hit the threshold
+        if (newMessages.length > MAX_MESSAGES) {
+          return newMessages.slice(0, PRUNE_THRESHOLD);
+        }
+        
+        return newMessages;
+      });
+    },
+    toggleRead: (messageId: string) => {
+      update(messages => 
+        messages.map(msg => 
+          msg.id === messageId ? { ...msg, read: !msg.read } : msg
+        )
+      );
+    },
+    togglePick: (messageId: string) => {
+      update(messages => 
+        messages.map(msg => 
+          msg.id === messageId ? { ...msg, pick: !msg.pick } : msg
+        )
+      );
     }
-    
-    return msgs;
-  });
+  };
 }
 
-export function toggleRead(messageId: string) {
-  messages.update(msgs => 
-    msgs.map(msg => 
-      msg.id === messageId ? { ...msg, read: !msg.read } : msg
-    )
-  );
-}
+export const messages = createMessageStore();
 
-export function togglePick(messageId: string) {
-  messages.update(msgs => 
-    msgs.map(msg => 
-      msg.id === messageId ? { ...msg, pick: !msg.pick } : msg
-    )
-  );
-}
+// Create derived stores with memoization
+export const chatMessages = derived(
+  [messages, filterSettings],
+  ([$messages, $filters]) => {
+    const filtered = $messages.slice(0, 100);
+    return $filters.username ? 
+      filtered.filter(msg => 
+        msg.username.toLowerCase().includes($filters.username.toLowerCase())
+      ) : filtered;
+  }
+);
+
+export const graspMessages = derived(
+  [messages, filterSettings],
+  ([$messages, $filters]) => filterMessages($messages, $filters)
+);
+
+export const pickedMessages = derived(
+  [messages, filterSettings],
+  ([$messages, $filters]) => {
+    const picked = $messages.filter(msg => msg.pick);
+    return $filters.username ?
+      picked.filter(msg => 
+        msg.username.toLowerCase().includes($filters.username.toLowerCase())
+      ) : picked;
+  }
+);
