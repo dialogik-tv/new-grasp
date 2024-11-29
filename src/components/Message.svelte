@@ -16,12 +16,20 @@
     }
   }
 
+  function handleKeyDown(event: KeyboardEvent) {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      message.read = !message.read;
+    } else if (event.altKey && event.key === 'Enter') {
+      message.pick = true;
+    } else if (event.ctrlKey && event.key === 'Enter') {
+      message.pick = false;
+    }
+  }
+
   $: messageClasses = [
     'message',
     message.read ? 'read' : '',
-    message.grasp.mod ? 'mod' : '',
-    message.grasp.sub ? 'sub' : '',
-    message.grasp.vip ? 'vip' : '',
     message.grasp.redemption ? 'redemption' : '',
     message.grasp.mention ? 'mention' : '',
     message.grasp.haystack ? 'haystack' : '',
@@ -30,9 +38,30 @@
     column === 'grasp' && message.grasp.shorty ? 'shorty' : '',
     `column-${column}`
   ].filter(Boolean).join(' ');
+
+  // Calculate role indicators
+  $: roleIndicators = [];
+  $: {
+    if (message.grasp.mod) roleIndicators.push('mod');
+    if (message.grasp.sub) roleIndicators.push('sub');
+    if (message.grasp.vip) roleIndicators.push('vip');
+  }
 </script>
 
-<div class={messageClasses} on:click={handleClick}>
+<div 
+  class={messageClasses} 
+  on:click={handleClick}
+  on:keydown={handleKeyDown}
+  role="button"
+  tabindex="0"
+>
+  {#if roleIndicators.length > 0}
+    <div class="role-indicators" aria-hidden="true">
+      {#each roleIndicators as role}
+        <div class={`role-indicator ${role}`} />
+      {/each}
+    </div>
+  {/if}
   <div class="meta">
     <div class="username">{message.username}</div>
     <div class="timestamp">{moment(message.timestamp).fromNow()}</div>
@@ -47,9 +76,14 @@
     margin-bottom: 1rem;
     background-color: #1b1b1b;
     padding: 0.6rem;
-    border-left: 0.5rem solid #1b1b1b;
-    border-right: 0.5rem solid #1b1b1b;
     cursor: pointer;
+    position: relative;
+    padding-left: 1.5rem;
+    outline: none;
+  }
+
+  .message:focus {
+    box-shadow: 0 0 0 2px rgba(62, 184, 255, 0.3);
   }
 
   .meta {
@@ -85,35 +119,34 @@
     color: #444;
   }
 
-  /* Role indicators - only show one at a time in left column */
-  .column-chat.message.mod {
-    border-left: 0.5rem solid purple;
-    border-right: 0.5rem solid #1b1b1b;
+  /* Role indicators */
+  .role-indicators {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 0.5rem;
+    display: flex;
+    flex-direction: column;
   }
 
-  .column-chat.message.sub:not(.mod) {
-    border-left: 0.5rem solid white;
-    border-right: 0.5rem solid #1b1b1b;
+  .role-indicator {
+    flex: 1;
   }
 
-  .column-chat.message.vip:not(.mod):not(.sub) {
-    border-left: 0.5rem solid #00ff00;
-    border-right: 0.5rem solid #1b1b1b;
+  .role-indicator.mod {
+    background-color: purple;
+  }
+
+  .role-indicator.sub {
+    background-color: white;
+  }
+
+  .role-indicator.vip {
+    background-color: #00ff00;
   }
 
   /* Grasp column styling */
-  .column-grasp.message.mod {
-    border-left: 0.5rem solid purple;
-  }
-
-  .column-grasp.message.sub {
-    border-left: 0.5rem solid white;
-  }
-
-  .column-grasp.message.vip {
-    border-left: 0.5rem solid #00ff00;
-  }
-
   .column-grasp.message.redemption {
     border-right: 0.5rem solid #ff5e00;
   }
@@ -127,7 +160,7 @@
   }
 
   /* Special styling for grasp column only */
-  .column-grasp.message.first .username {
+  .column-grasp.message.first .meta .username {
     background-color: purple;
     color: white;
     padding: 0.5rem;
@@ -135,7 +168,7 @@
     border-radius: 0.5rem;
   }
 
-  .column-grasp.message.second .username {
+  .column-grasp.message.second .meta .username {
     background-color: purple;
     color: white;
     padding: 0.1rem;

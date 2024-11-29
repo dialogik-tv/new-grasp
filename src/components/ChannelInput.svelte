@@ -23,7 +23,7 @@
         <input
           type="text"
           bind:value={channel}
-          placeholder="Enter Twitch channel"
+          placeholder="Enter Twitch channel name"
           class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:border-blue-500 placeholder-gray-500 text-center font-mono"
           autocomplete="off"
           spellcheck="false"

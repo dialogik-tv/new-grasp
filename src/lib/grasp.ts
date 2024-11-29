@@ -48,9 +48,9 @@ export class GraspAnalyzer {
     }
 
     // Check badges
-    result.mod = input.tags.mod === 1;
-    result.sub = input.tags.subscriber === 1;
-    result.vip = !!input.tags.badges.vip;
+    result.mod = input.tags.mod === '1' || input.tags.badges?.moderator === '1';
+    result.sub = input.tags.subscriber === '1' || input.tags.badges?.subscriber;
+    result.vip = !!input.tags.badges?.vip;
     result.redemption = !!input.tags.customRewardId;
 
     return result;
