@@ -1,10 +1,11 @@
 import { writable, derived } from 'svelte/store';
-import type { Message } from '../types';
+import type { Message, User } from '../types';
 import { filterMessages } from '../utils/messageFilters';
-import { get } from 'svelte/store';
-import { filterSettings } from './filterStore';
 
-// Create the main message store with a fixed size circular buffer
+// User message count store
+const userMessageCounts = writable<Record<string, number>>({});
+
+// Message store with fixed size circular buffer
 const MAX_MESSAGES = 1000;
 const PRUNE_THRESHOLD = 800;
 
@@ -14,6 +15,15 @@ function createMessageStore() {
   return {
     subscribe,
     add: (message: Message) => {
+      // Update user message count
+      userMessageCounts.update(counts => {
+        const currentCount = (counts[message.username.toLowerCase()] || 0) + 1;
+        return {
+          ...counts,
+          [message.username.toLowerCase()]: currentCount
+        };
+      });
+
       update(messages => {
         const newMessages = [message, ...messages];
         
@@ -46,28 +56,15 @@ export const messages = createMessageStore();
 
 // Create derived stores with memoization
 export const chatMessages = derived(
-  [messages, filterSettings],
-  ([$messages, $filters]) => {
-    const filtered = $messages.slice(0, 100);
-    return $filters.username ? 
-      filtered.filter(msg => 
-        msg.username.toLowerCase().includes($filters.username.toLowerCase())
-      ) : filtered;
-  }
+  messages,
+  $messages => $messages.slice(0, 100)
 );
 
-export const graspMessages = derived(
-  [messages, filterSettings],
-  ([$messages, $filters]) => filterMessages($messages, $filters)
-);
-
-export const pickedMessages = derived(
-  [messages, filterSettings],
-  ([$messages, $filters]) => {
-    const picked = $messages.filter(msg => msg.pick);
-    return $filters.username ?
-      picked.filter(msg => 
-        msg.username.toLowerCase().includes($filters.username.toLowerCase())
-      ) : picked;
-  }
-);
+// Export user message counts for use in other components
+export const getUserMessageCount = (username: string): number => {
+  let count = 0;
+  userMessageCounts.subscribe(counts => {
+    count = counts[username.toLowerCase()] || 0;
+  })();
+  return count;
+};

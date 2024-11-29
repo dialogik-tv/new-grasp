@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { filterSettings } from '../lib/messageStore';
+  import { filterSettings } from '../lib/stores/filterStore';
 </script>
 
 <div id="settings" class="flex justify-between items-center">

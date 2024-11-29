@@ -7,7 +7,7 @@ export class GraspAnalyzer {
     this.langData = langData;
   }
 
-  analyze(input: any, chatcount: number) {
+  analyze(input: any, messageCount: number) {
     const result = {
       mention: false,
       chatcount: false as number | false,
@@ -19,12 +19,9 @@ export class GraspAnalyzer {
       redemption: false
     };
 
-    // Skip if message is directed to someone else
-    if (
-      input.message.startsWith('@') &&
-      !input.message.toLowerCase().includes(`@${this.channel}`)
-    ) {
-      return result;
+    // Check for first or second message
+    if (messageCount === 1 || messageCount === 2) {
+      result.chatcount = messageCount;
     }
 
     // Check for broadcaster mention
@@ -32,25 +29,20 @@ export class GraspAnalyzer {
       result.mention = true;
     }
 
-    // Check for new user (first two messages)
-    if (chatcount < 3) {
-      result.chatcount = chatcount;
-    }
+    // Check for short greetings (exact match)
+    const sanitizedMessage = this.removeDiacritics(input.message.toLowerCase())
+      .replace(/[^a-z\s]/gi, '')
+      .trim();
+    result.shorty = this.langData.includes(sanitizedMessage);
 
-    // Check for short greetings
-    if (this.searchShorties(input.message)) {
-      result.shorty = true;
-    }
+    // Check for greeting phrases (partial match)
+    result.haystack = this.searchNeedles(input.message);
 
-    // Check for greeting phrases
-    if (this.searchNeedles(input.message)) {
-      result.haystack = true;
-    }
-
-    // Check badges
-    result.mod = input.tags.mod === '1' || !!input.tags.badges?.moderator;
-    result.sub = input.tags.subscriber === '1' || !!input.tags.badges?.subscriber;
-    result.vip = !!input.tags.badges?.vip;
+    // Check badges - ensure exclusive roles
+    const badges = input.tags.badges || {};
+    result.mod = input.tags.mod === '1' || !!badges.moderator;
+    result.sub = !result.mod && (input.tags.subscriber === '1' || !!badges.subscriber);
+    result.vip = !result.mod && !result.sub && !!badges.vip;
     result.redemption = !!input.tags.customRewardId;
 
     return result;
@@ -66,13 +58,6 @@ export class GraspAnalyzer {
       const regex = new RegExp(`\\b${escapedNeedle}\\b`, 'g');
       return regex.test(sanitized);
     });
-  }
-
-  private searchShorties(message: string): boolean {
-    const sanitized = this.removeDiacritics(message.toLowerCase())
-      .replace(/[^a-z\s]/gi, '')
-      .trim();
-    return this.langData.includes(sanitized);
   }
 
   private removeDiacritics(str: string): string {

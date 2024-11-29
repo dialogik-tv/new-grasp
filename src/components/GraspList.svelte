@@ -1,20 +1,10 @@
 <script lang="ts">
-  import { messages, filterSettings } from '../lib/messageStore';
+  import { messages } from '../lib/stores/messageStore';
+  import { filterSettings } from '../lib/stores/filterStore';
+  import { filterMessages } from '../lib/utils/messageFilters';
   import Message from './Message.svelte';
 
-  $: filteredMessages = $messages.filter(msg => {
-    const f = $filterSettings;
-    return (
-      (f.mention && msg.grasp.mention) ||
-      (f.mod && msg.grasp.mod) ||
-      (f.sub && msg.grasp.sub) ||
-      (f.vip && msg.grasp.vip) ||
-      (f.chatcount && msg.grasp.chatcount !== false) ||
-      (f.haystack && msg.grasp.haystack) ||
-      (f.shorty && msg.grasp.shorty) ||
-      msg.grasp.redemption
-    ) && (!f.username || msg.username.toLowerCase().includes(f.username.toLowerCase()));
-  });
+  $: filteredMessages = filterMessages($messages, $filterSettings);
 </script>
 
 <div class="message-list">
@@ -22,3 +12,32 @@
     <Message {message} column="grasp" />
   {/each}
 </div>
+
+<style>
+  .message-list {
+    height: 94vh;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    padding-top: 1rem;
+    padding-right: 1rem;
+  }
+
+  .message-list::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .message-list::-webkit-scrollbar-thumb {
+    background-color: #222;
+    border-radius: 3px;
+  }
+
+  .message-list::-webkit-scrollbar-thumb:hover {
+    background-color: #444;
+  }
+
+  .message-list::-webkit-scrollbar-track {
+    background-color: #000;
+    border-radius: 3px;
+  }
+</style>

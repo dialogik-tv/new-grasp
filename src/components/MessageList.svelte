@@ -1,16 +1,26 @@
 <script lang="ts">
-  import { chatMessages, graspMessages, pickedMessages } from '../lib/stores/messageStore';
+  import { messages } from '../lib/stores/messageStore';
+  import { filterSettings } from '../lib/stores/filterStore';
+  import { filterMessages } from '../lib/utils/messageFilters';
   import Message from './Message.svelte';
 
   export let column: 'chat' | 'grasp' | 'picks' = 'chat';
   
-  $: messages = column === 'chat' ? chatMessages :
-                column === 'grasp' ? graspMessages :
-                pickedMessages;
+  $: displayMessages = column === 'chat' 
+    ? $messages.slice(0, 100) 
+    : column === 'grasp'
+    ? filterMessages($messages, $filterSettings)
+    : $messages.filter(msg => msg.pick);
+
+  $: filteredMessages = $filterSettings.username
+    ? displayMessages.filter(msg => 
+        msg.username.toLowerCase().includes($filterSettings.username.toLowerCase())
+      )
+    : displayMessages;
 </script>
 
 <div class="message-list">
-  {#each $messages as message (message.id)}
+  {#each filteredMessages as message (message.id)}
     <Message {message} {column} />
   {/each}
 </div>

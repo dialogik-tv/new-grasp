@@ -1,7 +1,7 @@
 import TwitchJs from 'twitch-js';
 import type { Message } from '../types';
 import { GraspAnalyzer } from '../grasp';
-import { messages } from '../stores/messageStore';
+import { messages, getUserMessageCount } from '../stores/messageStore';
 import { updateUser } from '../stores/userStore';
 import { COMMON_BOTS } from '../config';
 
@@ -37,12 +37,14 @@ export async function initializeTwitchChat(channel: string, grasp: GraspAnalyzer
     if (COMMON_BOTS.includes(msg.username.toLowerCase())) return;
 
     try {
+      const messageCount = getUserMessageCount(msg.username) + 1;
+
       // Update user info
       const user = {
         userId: msg.tags.userId,
         username: msg.tags.displayName || msg.username,
         badges: msg.tags.badges || {},
-        chatcount: 1
+        chatcount: messageCount
       };
       updateUser(user);
 
@@ -56,7 +58,7 @@ export async function initializeTwitchChat(channel: string, grasp: GraspAnalyzer
         emotes: msg.tags.emotes || [],
         read: false,
         pick: false,
-        grasp: grasp.analyze(msg, user.chatcount)
+        grasp: grasp.analyze(msg, messageCount)
       };
 
       messages.add(message);
