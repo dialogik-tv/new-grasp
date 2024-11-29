@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --min-width: 420;
+  --min-width-px: 420px;
+  --max-width: 1920;
+  --min-font: 16;
+  --min-font-px: 16px;
+  --max-font: 20;
+}
+
+body {
+  font-size: calc(var(--min-font-px) + (var(--max-font) - var(--min-font)) * ((100vw - var(--min-width-px)) / (var(--max-width) - var(--min-width))));
+  background-color: #000;
+  color: #efefef;
+  font-family: 'Fira Code', monospace;
+  letter-spacing: -2px;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 1rem;
+  padding-bottom: 0;
+}
+
+.message-list {
+  height: 94vh;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  padding-top: 1rem;
+  padding-right: 1rem;
+}
+
+.message-list::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.message-list::-webkit-scrollbar-thumb {
+  background-color: #222;
+  border-radius: 3px;
+}
+
+.message-list::-webkit-scrollbar-thumb:hover {
+  background-color: #444;
+}
+
+.message-list::-webkit-scrollbar-track {
+  background-color: #000;
+  border-radius: 3px;
+}
+
+@media (max-width: 641px) {
+  #picks, #chat { 
+    display: none;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  #picks {
+    display: none;
+  }
+}
