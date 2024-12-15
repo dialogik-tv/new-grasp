@@ -5,6 +5,7 @@
   import SettingsPanel from './components/SettingsPanel.svelte';
   import ChannelInput from './components/ChannelInput.svelte';
   import UserList from './components/UserList.svelte';
+  import StatsModal from './components/stats/StatsModal.svelte';
   import { initializeTwitchChat } from './lib/services/twitchChat';
   import { initializeKeyboardShortcuts } from './lib/utils/keyboard';
   import { getChannelFromUrl, getUrlParams } from './lib/urlParams';
@@ -45,6 +46,7 @@
       {#if $visibility.userlistVisible}
         <UserList />
       {/if}
+      <StatsModal show={$visibility.statsVisible} />
     </main>
   </div>
 {:else}

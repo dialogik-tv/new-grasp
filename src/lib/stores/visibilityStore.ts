@@ -3,11 +3,13 @@ import { writable } from 'svelte/store';
 interface VisibilityState {
   chatVisible: boolean;
   userlistVisible: boolean;
+  statsVisible: boolean;
 }
 
 const defaultState: VisibilityState = {
   chatVisible: true,
-  userlistVisible: false
+  userlistVisible: false,
+  statsVisible: false
 };
 
 function createVisibilityStore() {
@@ -16,7 +18,8 @@ function createVisibilityStore() {
   return {
     subscribe,
     toggleChat: () => update(state => ({ ...state, chatVisible: !state.chatVisible })),
-    toggleUserlist: () => update(state => ({ ...state, userlistVisible: !state.userlistVisible }))
+    toggleUserlist: () => update(state => ({ ...state, userlistVisible: !state.userlistVisible })),
+    toggleStats: () => update(state => ({ ...state, statsVisible: !state.statsVisible }))
   };
 }
 

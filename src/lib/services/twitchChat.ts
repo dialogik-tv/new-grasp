@@ -1,7 +1,7 @@
 import TwitchJs from 'twitch-js';
 import type { Message } from '../types';
 import { GraspAnalyzer } from '../grasp';
-import { messages, getUserMessageCount } from '../stores/messageStore';
+import { messages } from '../stores/messages/messageStore';
 import { updateUser } from '../stores/userStore';
 import { COMMON_BOTS } from '../config';
 
@@ -37,31 +37,28 @@ export async function initializeTwitchChat(channel: string, grasp: GraspAnalyzer
     if (COMMON_BOTS.includes(msg.username.toLowerCase())) return;
 
     try {
-      const messageCount = getUserMessageCount(msg.username) + 1;
-
-      // Update user info
-      const user = {
-        userId: msg.tags.userId,
-        username: msg.tags.displayName || msg.username,
-        badges: msg.tags.badges || {},
-        chatcount: messageCount
-      };
-      updateUser(user);
-
       // Create message
       const message: Message = {
         id: crypto.randomUUID(),
-        username: user.username,
+        username: msg.tags.displayName || msg.username,
         message: msg.message,
         timestamp: new Date(),
         badges: msg.tags.badges || {},
         emotes: msg.tags.emotes || [],
         read: false,
         pick: false,
-        grasp: grasp.analyze(msg, messageCount)
+        grasp: grasp.analyze(msg)
       };
 
       messages.add(message);
+
+      // Update user info
+      updateUser({
+        userId: msg.tags.userId,
+        username: message.username,
+        badges: message.badges,
+        chatcount: 1 // The store will increment this
+      });
     } catch (error) {
       console.error('Error processing message:', error);
     }

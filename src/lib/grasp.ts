@@ -7,10 +7,12 @@ export class GraspAnalyzer {
     this.langData = langData;
   }
 
-  analyze(input: any, messageCount: number) {
+  analyze(input: any) {
+    const messageCount = input.tags?.messageCount || 1;
+    
     const result = {
       mention: false,
-      chatcount: false as number | false,
+      chatcount: messageCount <= 2 ? messageCount : false,
       haystack: false,
       shorty: false,
       mod: false,
@@ -18,11 +20,6 @@ export class GraspAnalyzer {
       vip: false,
       redemption: false
     };
-
-    // Check for first or second message
-    if (messageCount === 1 || messageCount === 2) {
-      result.chatcount = messageCount;
-    }
 
     // Check for broadcaster mention
     if (input.message.toLowerCase().includes(`@${this.channel}`)) {
